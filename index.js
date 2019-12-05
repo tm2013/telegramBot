@@ -6,6 +6,10 @@ dotenv.config()
 const token = process.env.botToken
 const bot = new TelegramBot(token, { polling: true })
 
-bot.on('message', msg => {
-  bot.sendMessage(msg.chat.id, 'I AM A HUMAN BEEP BOOP.')
+bot.onText(/\/ping/, msg => {
+  bot.sendMessage(msg.chat.id, 'pong')
+})
+
+bot.onText(/\//, msg => {
+  bot.sendMessage(msg.chat.id, 'https://github.com/nishad10/telegramBot')
 })
