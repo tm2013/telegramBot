@@ -7,8 +7,13 @@
   "author": "Nishad Aherrao",
   "license": "GNU GPL",
   "private": false,
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
+    "axios": "^0.19.0",
     "dotenv": "^8.2.0",
-    "node-telegram-bot-api": "^0.40.0"
+    "node-telegram-bot-api": "^0.40.0",
+    "ramda": "^0.26.1"
   }
 }
