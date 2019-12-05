@@ -8,6 +8,7 @@
   "license": "GNU GPL",
   "private": false,
   "dependencies": {
+    "dotenv": "^8.2.0",
     "node-telegram-bot-api": "^0.40.0"
   }
 }
