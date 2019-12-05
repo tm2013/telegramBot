@@ -1,0 +1,13 @@
+{
+  "name": "justAnotherHumanPerson",
+  "version": "1.0-alpha",
+  "description": "Telegram Bot",
+  "main": "index.js",
+  "repository": "https://github.com/nishad10/telegramBot.git",
+  "author": "Nishad Aherrao",
+  "license": "GNU GPL",
+  "private": false,
+  "dependencies": {
+    "node-telegram-bot-api": "^0.40.0"
+  }
+}
