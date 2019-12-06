@@ -81,6 +81,39 @@ bot.onText(/\/repo/, msg => {
     { parse_mode: 'Markdown' }
   )
 })
+bot.onText(/\/mcap/, msg => {
+  let config = {
+    headers: {
+      ['X-CMC_PRO_API_KEY']: process.env.coinMarketCapKey
+    }
+  }
+  axios
+    .all([
+      axios.get(
+        'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=RADS',
+        config
+      ),
+      axios.get(
+        'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=BTC',
+        config
+      )
+    ])
+    .then(
+      axios.spread((mcap, btc) => {
+        bot.sendMessage(
+          msg.chat.id,
+          `$${Math.round(
+            mcap.data.data.RADS.quote.USD.market_cap
+          ).toLocaleString()} | ${parseFloat(
+            mcap.data.data.RADS.quote.USD.market_cap /
+              btc.data.data.BTC.quote.USD.price
+          ).toFixed(2)} BTC`,
+          { parse_mode: 'Markdown' }
+        )
+      })
+    )
+    .catch(error => console.log(error))
+})
 
 bot.onText(/\/price/, msg => {
   axios
