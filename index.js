@@ -64,7 +64,16 @@ const priceTemplateFinexbox = (name, data) =>
 bot.onText(/\/ping/, msg => {
   bot.sendMessage(msg.chat.id, 'pong')
 })
-
+bot.onText(/\/help/, msg => {
+  bot.sendMessage(
+    msg.chat.id,
+    `
+/repo  - To see bot's github repository.
+/price - To see the RADS price across different exchanges
+/mcap  - To see the RADS market capitalization`,
+    { parse_mode: 'Markdown' }
+  )
+})
 bot.onText(/\/repo/, msg => {
   bot.sendMessage(
     msg.chat.id,
