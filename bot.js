@@ -19,7 +19,9 @@ const priceTemplateBittrex = (name, data, btc) =>
   `${decodeURI(`%60${name}%60`)} : ${parseFloat(data.Last).toFixed(
     8
   )} BTC | $${parseFloat(data.Last * btc).toFixed(2)}
-*Vol:* ${Math.round(data.Volume)} RADS | 0.0 BTC
+*Vol:* ${Math.round(data.Volume)} RADS | ${(parseFloat(data.Last).toFixed(8) *
+    Math.round(data.Volume)
+  ).toFixed(2)} BTC
 *Low:* ${parseFloat(data.Low).toFixed(8)} | *High:* ${parseFloat(
     data.High
   ).toFixed(8)}
@@ -34,7 +36,10 @@ const priceTemplateVCC = (name, data, btc) =>
   `${decodeURI(`%60${name}%60`)} : ${parseFloat(data.last).toFixed(
     8
   )} BTC | $${parseFloat(data.last * btc).toFixed(2)}
-*Vol:* ${Math.round(data.baseVolume)} RADS | 0.0 BTC
+*Vol:* ${Math.round(data.baseVolume)} RADS | ${(parseFloat(data.last).toFixed(
+    8
+  ) * Math.round(data.baseVolume)
+  ).toFixed(2)} BTC
 *Low:* ${parseFloat(data.low24hr).toFixed(8)} | *High:* ${parseFloat(
     data.high24hr
   ).toFixed(8)}
@@ -44,7 +49,10 @@ const priceTemplateUpbit = (name, data, btc) =>
   `${decodeURI(`%60${name}%60`)} : ${parseFloat(data.trade_price).toFixed(
     8
   )} BTC | $${parseFloat(data.trade_price * btc).toFixed(2)}
-*Vol:* ${Math.round(data.trade_volume)} RADS | 0.0 BTC
+*Vol:* ${Math.round(data.trade_volume)} RADS | ${(parseFloat(
+    data.trade_price
+  ).toFixed(8) * Math.round(data.trade_volume)
+  ).toFixed(2)} BTC
 *Low:* ${parseFloat(data.low_price).toFixed(8)} | *High:* ${parseFloat(
     data.high_price
   ).toFixed(8)}
@@ -62,7 +70,9 @@ const priceTemplateFinexbox = (name, data) =>
   `${decodeURI(`%60${name}%60`)} : ${parseFloat(data.price).toFixed(
     8
   )} BTC | $0.0
-*Vol:* ${Math.round(data.volume)} RADS | 0.0 BTC
+*Vol:* ${Math.round(data.volume)} RADS | ${(parseFloat(data.price).toFixed(8) *
+    Math.round(data.volume)
+  ).toFixed(2)} BTC
 *Low:* ${parseFloat(data.low).toFixed(8)} | *High:* ${parseFloat(
     data.high
   ).toFixed(8)}
