@@ -7,8 +7,8 @@ let bot
 const token = process.env.botToken
 
 if (process.env.NODE_ENV === 'production') {
-  bot = new TelegramBot(token)
-  bot.setWebHook(process.env.HEROKU_URL + token)
+  bot = new TelegramBot(token, { polling: true })
+  //gubot.setWebHook(process.env.HEROKU_URL + token)
 } else {
   bot = new TelegramBot(token, { polling: true })
 }
