@@ -89,24 +89,27 @@ bot.on('message', msg => {
   )
 })
 bot.onText(/\/ping/, msg => {
-  bot.sendMessage(msg.chat.id, 'pong')
+  if (new Date(new Date().toUTCString()) - new Date(msg.date * 1000) < 10000)
+    bot.sendMessage(msg.chat.id, 'pong')
 })
 bot.onText(/\/help/, msg => {
-  bot.sendMessage(
-    msg.chat.id,
-    `
+  if (new Date(new Date().toUTCString()) - new Date(msg.date * 1000) < 10000)
+    bot.sendMessage(
+      msg.chat.id,
+      `
 /repo  - To see bot's github repository.
 /price - To see the RADS price across different exchanges
 /mcap  - To see the RADS market capitalization`,
-    { parse_mode: 'Markdown' }
-  )
+      { parse_mode: 'Markdown' }
+    )
 })
 bot.onText(/\/repo/, msg => {
-  bot.sendMessage(
-    msg.chat.id,
-    '[GitHub](https://github.com/nishad10/telegramBot)',
-    { parse_mode: 'Markdown' }
-  )
+  if (new Date(new Date().toUTCString()) - new Date(msg.date * 1000) < 10000)
+    bot.sendMessage(
+      msg.chat.id,
+      '[GitHub](https://github.com/nishad10/telegramBot)',
+      { parse_mode: 'Markdown' }
+    )
 })
 bot.onText(/\/mcap/, (msg, a) => {
   let config = {
@@ -143,52 +146,55 @@ bot.onText(/\/mcap/, (msg, a) => {
 })
 
 bot.onText(/\/price/, msg => {
-  axios
-    .all([
-      axios.get(
-        'https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=btc-rads'
-      ), //bittrex with param
-      axios.get(
-        'https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=USD-BTC'
-      ),
-      axios.get(`https://vcc.exchange/api/v2/summary`), // vcc without param
-      axios.get('https://api.upbit.com/v1/ticker?markets=BTC-RADS'), //upbit with param
-      axios.get('https://api.upbit.com/v1/ticker?markets=USDT-BTC'), //upbit with param
-      axios.get('https://xapi.finexbox.com/v1/market') // finebox without param
-    ])
-    .then(
-      axios.spread(
-        (bittrex, bittrexBTCData, vcc, upbit, upbitBTCData, finebox) => {
-          const bittrexData = bittrex.data.success ? bittrex.data.result[0] : {}
-          const bittrexBTC = bittrexBTCData.data.success
-            ? bittrexBTCData.data.result[0].Last
-            : 0
-          const vccData = ramda.isNil(ramda.prop('rads_btc', vcc.data.data))
-            ? {}
-            : ramda.prop('rads_btc', vcc.data.data)
-          const vccBTC = ramda.isNil(ramda.prop('btc_usdt', vcc.data.data))
-            ? 0
-            : ramda.prop('btc_usdt', vcc.data.data).last
-          const upbitData = upbit.data[0]
-          const upbitBTC = upbitBTCData.data[0].trade_price
-          const fineboxID = ramda.findIndex(ramda.propEq('market', 'RADS_BTC'))(
-            finebox.data.result
-          )
-          const fineboxData = ramda.isNil(finebox.data.result[fineboxID])
-            ? {}
-            : finebox.data.result[fineboxID]
-          bot.sendMessage(
-            msg.chat.id,
-            `${priceTemplateBittrex('Bittrex', bittrexData, bittrexBTC)}
+  if (new Date(new Date().toUTCString()) - new Date(msg.date * 1000) < 10000)
+    axios
+      .all([
+        axios.get(
+          'https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=btc-rads'
+        ), //bittrex with param
+        axios.get(
+          'https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=USD-BTC'
+        ),
+        axios.get(`https://vcc.exchange/api/v2/summary`), // vcc without param
+        axios.get('https://api.upbit.com/v1/ticker?markets=BTC-RADS'), //upbit with param
+        axios.get('https://api.upbit.com/v1/ticker?markets=USDT-BTC'), //upbit with param
+        axios.get('https://xapi.finexbox.com/v1/market') // finebox without param
+      ])
+      .then(
+        axios.spread(
+          (bittrex, bittrexBTCData, vcc, upbit, upbitBTCData, finebox) => {
+            const bittrexData = bittrex.data.success
+              ? bittrex.data.result[0]
+              : {}
+            const bittrexBTC = bittrexBTCData.data.success
+              ? bittrexBTCData.data.result[0].Last
+              : 0
+            const vccData = ramda.isNil(ramda.prop('rads_btc', vcc.data.data))
+              ? {}
+              : ramda.prop('rads_btc', vcc.data.data)
+            const vccBTC = ramda.isNil(ramda.prop('btc_usdt', vcc.data.data))
+              ? 0
+              : ramda.prop('btc_usdt', vcc.data.data).last
+            const upbitData = upbit.data[0]
+            const upbitBTC = upbitBTCData.data[0].trade_price
+            const fineboxID = ramda.findIndex(
+              ramda.propEq('market', 'RADS_BTC')
+            )(finebox.data.result)
+            const fineboxData = ramda.isNil(finebox.data.result[fineboxID])
+              ? {}
+              : finebox.data.result[fineboxID]
+            bot.sendMessage(
+              msg.chat.id,
+              `${priceTemplateBittrex('Bittrex', bittrexData, bittrexBTC)}
             \n${priceTemplateVCC('VCC', vccData, vccBTC)}
             \n${priceTemplateUpbit('Upbit', upbitData, upbitBTC)}
             \n${priceTemplateFinexbox('Finexbox', fineboxData)}`,
-            { parse_mode: 'Markdown' }
-          )
-        }
+              { parse_mode: 'Markdown' }
+            )
+          }
+        )
       )
-    )
-    .catch(error => console.log(error))
+      .catch(error => console.log(error))
 })
 
 module.exports = bot
