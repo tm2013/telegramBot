@@ -78,6 +78,16 @@ const priceTemplateFinexbox = (name, data) =>
   ).toFixed(8)}
 *24h change:* ${parseFloat(data.percent).toFixed(2)}%`
 
+bot.on('message', msg => {
+  console.log(
+    `\x1b[36m Requested by: \x1b[0m${msg.from.id}, \x1b[36m Alias: \x1b[0m${msg
+      .from.username} ${msg.chat.type === 'supergroup'
+      ? `\x1b[36m Group: \x1b[0m${msg.chat.title}`
+      : `\x1b[36m Private: \x1b[0m${msg.chat.username}`}
+      \x1b[36m Msg Txt: \x1b[0m${msg.text},
+      \x1b[36m Timestamp: \x1b[0m${new Date(msg.date).toUTCString()}),`
+  )
+})
 bot.onText(/\/ping/, msg => {
   bot.sendMessage(msg.chat.id, 'pong')
 })
@@ -98,7 +108,7 @@ bot.onText(/\/repo/, msg => {
     { parse_mode: 'Markdown' }
   )
 })
-bot.onText(/\/mcap/, msg => {
+bot.onText(/\/mcap/, (msg, a) => {
   let config = {
     headers: {
       ['X-CMC_PRO_API_KEY']: process.env.coinMarketCapKey
