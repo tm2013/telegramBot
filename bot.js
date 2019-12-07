@@ -85,7 +85,7 @@ bot.on('message', msg => {
       ? `\x1b[36m Group: \x1b[0m${msg.chat.title}`
       : `\x1b[36m Private: \x1b[0m${msg.chat.username}`}
       \x1b[36m Msg Txt: \x1b[0m${msg.text},
-      \x1b[36m Timestamp: \x1b[0m${new Date(msg.date).toUTCString()}),`
+      \x1b[36m Timestamp: \x1b[0m${new Date(msg.date * 1000).toUTCString()}),`
   )
 })
 bot.onText(/\/ping/, msg => {
