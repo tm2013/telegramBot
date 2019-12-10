@@ -12,16 +12,21 @@ if (process.env.NODE_ENV === 'production') {
 } else {
   bot = new TelegramBot(token, { polling: true })
 }
-
+const config = {
+  headers: {
+    ['X-CMC_PRO_API_KEY']: process.env.coinMarketCapKey
+  }
+}
 console.log('Bot server started in the ' + process.env.NODE_ENV + ' mode')
 
 const priceTemplateBittrex = (name, data, btc) =>
   `${decodeURI(`%60${name}%60`)} : ${parseFloat(data.Last).toFixed(
     8
   )} BTC | $${parseFloat(data.Last * btc).toFixed(2)}
-*Vol:* ${Math.round(data.Volume)} RADS | ${(parseFloat(data.Last).toFixed(8) *
-    Math.round(data.Volume)
-  ).toFixed(2)} BTC
+**Vol:** ${Math.round(data.Volume)} RADS **|** ${(parseFloat(data.Last).toFixed(
+    8
+  ) * Math.round(data.Volume)
+  ).toFixed(2)} BTC **|** ${Math.round(data.Volume * data.Last * btc)} USD
 *Low:* ${parseFloat(data.Low).toFixed(8)} | *High:* ${parseFloat(
     data.High
   ).toFixed(8)}
@@ -36,10 +41,10 @@ const priceTemplateVCC = (name, data, btc) =>
   `${decodeURI(`%60${name}%60`)} : ${parseFloat(data.last).toFixed(
     8
   )} BTC | $${parseFloat(data.last * btc).toFixed(2)}
-*Vol:* ${Math.round(data.baseVolume)} RADS | ${(parseFloat(data.last).toFixed(
-    8
-  ) * Math.round(data.baseVolume)
-  ).toFixed(2)} BTC
+**Vol:** ${Math.round(data.baseVolume)} RADS **|** ${(parseFloat(
+    data.last
+  ).toFixed(8) * Math.round(data.baseVolume)
+  ).toFixed(2)} BTC **|** ${Math.round(data.baseVolume * data.last * btc)} USD
 *Low:* ${parseFloat(data.low24hr).toFixed(8)} | *High:* ${parseFloat(
     data.high24hr
   ).toFixed(8)}
@@ -49,10 +54,12 @@ const priceTemplateUpbit = (name, data, btc) =>
   `${decodeURI(`%60${name}%60`)} : ${parseFloat(data.trade_price).toFixed(
     8
   )} BTC | $${parseFloat(data.trade_price * btc).toFixed(2)}
-*Vol:* ${Math.round(data.trade_volume)} RADS | ${(parseFloat(
+**Vol:** ${Math.round(data.trade_volume)} RADS **|** ${(parseFloat(
     data.trade_price
   ).toFixed(8) * Math.round(data.trade_volume)
-  ).toFixed(2)} BTC
+  ).toFixed(2)} BTC **|** ${Math.round(
+    data.trade_volume * data.trade_price * btc
+  )} USD
 *Low:* ${parseFloat(data.low_price).toFixed(8)} | *High:* ${parseFloat(
     data.high_price
   ).toFixed(8)}
@@ -66,17 +73,19 @@ const priceTemplateUpbit = (name, data, btc) =>
     )
   ).toFixed(2)}%`
 
-const priceTemplateFinexbox = (name, data) =>
+const priceTemplateFinexbox = (name, data, btc) =>
   `${decodeURI(`%60${name}%60`)} : ${parseFloat(data.price).toFixed(
     8
-  )} BTC | $0.0
-*Vol:* ${Math.round(data.volume)} RADS | ${(parseFloat(data.price).toFixed(8) *
-    Math.round(data.volume)
-  ).toFixed(2)} BTC
+  )} BTC | $${parseFloat(data.price * btc).toFixed(2)}
+**Vol:** ${Math.round(data.volume)} RADS **|** ${(parseFloat(
+    data.price
+  ).toFixed(8) * Math.round(data.volume)
+  ).toFixed(2)} BTC **|** ${Math.round(data.volume * data.price * btc)} USD
 *Low:* ${parseFloat(data.low).toFixed(8)} | *High:* ${parseFloat(
     data.high
   ).toFixed(8)}
-*24h change:* ${parseFloat(data.percent).toFixed(2)}%`
+*24h change:* ${parseFloat(data.percent).toFixed(2)}%
+`
 
 bot.on('message', msg => {
   console.log(
@@ -97,7 +106,6 @@ bot.onText(/\/help/, msg => {
     bot.sendMessage(
       msg.chat.id,
       `
-/repo  - To see bot's github repository.
 /price - To see the RADS price across different exchanges
 /mcap  - To see the RADS market capitalization`,
       { parse_mode: 'Markdown' }
@@ -112,11 +120,6 @@ bot.onText(/\/repo/, msg => {
     )
 })
 bot.onText(/\/mcap/, (msg, a) => {
-  let config = {
-    headers: {
-      ['X-CMC_PRO_API_KEY']: process.env.coinMarketCapKey
-    }
-  }
   axios
     .all([
       axios.get(
@@ -158,11 +161,23 @@ bot.onText(/\/price/, msg => {
         axios.get(`https://vcc.exchange/api/v2/summary`), // vcc without param
         axios.get('https://api.upbit.com/v1/ticker?markets=BTC-RADS'), //upbit with param
         axios.get('https://api.upbit.com/v1/ticker?markets=USDT-BTC'), //upbit with param
-        axios.get('https://xapi.finexbox.com/v1/market') // finebox without param
+        axios.get('https://xapi.finexbox.com/v1/market'), // finebox without param
+        axios.get(
+          'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=BTC',
+          config
+        ) // This is the BTC USD Price for converting finexbox RADS/BTC price to USD. !!! Will have small discrepancy as not getting the BTC/USD price from finexbox directly'
       ])
       .then(
         axios.spread(
-          (bittrex, bittrexBTCData, vcc, upbit, upbitBTCData, finebox) => {
+          (
+            bittrex,
+            bittrexBTCData,
+            vcc,
+            upbit,
+            upbitBTCData,
+            finebox,
+            coinMarketCapBTCData
+          ) => {
             const bittrexData = bittrex.data.success
               ? bittrex.data.result[0]
               : {}
@@ -183,12 +198,18 @@ bot.onText(/\/price/, msg => {
             const fineboxData = ramda.isNil(finebox.data.result[fineboxID])
               ? {}
               : finebox.data.result[fineboxID]
+            const coinMarketCapBTC =
+              coinMarketCapBTCData.data.data.BTC.quote.USD.price
             bot.sendMessage(
               msg.chat.id,
               `${priceTemplateBittrex('Bittrex', bittrexData, bittrexBTC)}
             \n${priceTemplateVCC('VCC', vccData, vccBTC)}
             \n${priceTemplateUpbit('Upbit', upbitData, upbitBTC)}
-            \n${priceTemplateFinexbox('Finexbox', fineboxData)}`,
+            \n${priceTemplateFinexbox(
+              'Finexbox',
+              fineboxData,
+              coinMarketCapBTC
+            )}`,
               { parse_mode: 'Markdown' }
             )
           }
