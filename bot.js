@@ -62,7 +62,7 @@ const priceTemplateVCC = (name, data, btc) =>
     : ' ⬇️'}`
 
 const priceTemplateUpbit = (name, data, btc) =>
-  `[UPbit Korea](https://upbit.com/exchange?code=CRIX.UPBIT.BTC-RADS) : ${parseFloat(
+  `[UPbit](https://upbit.com/exchange?code=CRIX.UPBIT.BTC-RADS) : ${parseFloat(
     data.trade_price
   ).toFixed(8)} BTC | $${parseFloat(data.trade_price * btc).toFixed(2)}
 *Vol:* ${Math.round(data.trade_volume)} RADS **|** ${(parseFloat(
@@ -105,11 +105,15 @@ const priceTemplateFinexbox = (name, data, btc) =>
 *Low:* ${parseFloat(data.low).toFixed(8)} | *High:* ${parseFloat(
     data.high
   ).toFixed(8)}
-*24h change:* ${parseFloat(data.percent).toFixed(2)}% ${parseFloat(
+*24h change:* N/A`
+
+/*
+ ${parseFloat(data.percent).toFixed(2)}% ${parseFloat(
     data.percent
   ).toFixed(8) >= 0
     ? ' ⬆️'
-    : ' ⬇️'}`
+    : ' ⬇️'}
+    */
 
 bot.on('message', msg => {
   console.log(
