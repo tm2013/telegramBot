@@ -2,6 +2,7 @@ const dotenv = require('dotenv')
 const TelegramBot = require('node-telegram-bot-api')
 const axios = require('axios')
 const ramda = require('ramda')
+const fs = require('fs')
 
 let bot
 const token = process.env.botToken
@@ -114,8 +115,121 @@ const priceTemplateFinexbox = (name, data, btc) =>
     ? ' ⬆️'
     : ' ⬇️'}
     */
-
+/*const Word_Lists = {
+  badwords: [
+    'DUMP',
+    'HTTP',
+    'AIRDROP',
+    'PUMP',
+    'JOIN',
+    'INVITE',
+    'BUY',
+    'SERCH',
+    'MESSAGE',
+    'PM'
+  ],
+  problemwords: [
+    'PROFIT',
+    'BUY',
+    'SELL',
+    'BOUNTY',
+    'FREE',
+    'CHECK',
+    'TRADE',
+    'LINK',
+    'SIGNAL',
+    'NOW',
+    'GUARANTEED',
+    'GROUP',
+    'CHANNEL',
+    'LINK',
+    'GROUP',
+    'AIRDROP',
+    'LEGIT',
+    'INVESMENT',
+    'FRAUD',
+    'FRAUDSTER',
+    'INVEST',
+    'POST',
+    'CONGRATULATIONS',
+    'BENEFIT',
+    'DM',
+    'MESSAGE',
+    'TIMES',
+    'TRADING',
+    'INBOX',
+    'OPPORTUNITY',
+    '1X',
+    '2X',
+    '3X',
+    '4X',
+    '5X',
+    '6X',
+    '7X',
+    '8X',
+    '9X',
+    '10X',
+    '11X',
+    '12X',
+    '13X',
+    '14X',
+    '15X',
+    '16X',
+    '17X',
+    '18X',
+    '19X',
+    '20X',
+    '25X',
+    '50X',
+    '100X'
+  ]
+}
 bot.on('message', msg => {
+  console.log('in')
+  //first filter out messages we dont care about
+  if (ramda.isNil(msg.text) || ramda.isEmpty(msg.text)) return false
+  console.log('inpass')
+  const messagetext = msg.text.toUpperCase()
+  const seperated = messagetext.split(/[\s,\r\n]+/g)
+  //assuming telegram link was included...
+  let bad_count = 0
+  //console.log(messagetext)
+
+  Word_Lists.badwords.map(x => {
+    if (ramda.includes(x, seperated)) {
+      bad_count += 1
+    } else {
+    }
+  })
+  console.log('inpa2ss')
+  console.log(seperated)
+  Word_Lists.problemwords.map(x => {
+    if (ramda.includes(x, seperated)) {
+      bad_count += 1
+    } else {
+    }
+  })
+  console.log(bad_count)
+  const wordcount = messagetext.split(/[\s,\r\n]+/g).length
+  console.log(wordcount)
+  const badscore = bad_count / wordcount
+  console.log(badscore)
+  if (badscore > 0.015) {
+    console.log('This should be a ban.')
+    return true
+  } else {
+    console.log('This is fine.')
+    return false
+  }
+})*/
+bot.on('message', msg => {
+  if (!msg.text.startsWith('/')) {
+    const data = 'NEWDATASTART\n' + msg.text + '\nNEWDATAEND\n'
+    fs.appendFile('spam.txt', data, err => {
+      // In case of a error throw err.
+      if (err) console.log(err)
+    })
+  }
   console.log(
     `\x1b[36m Requested by: \x1b[0m${msg.from.id}, \x1b[36m Alias: \x1b[0m${msg
       .from.username} ${msg.chat.type === 'supergroup'
@@ -243,7 +357,14 @@ bot.onText(/\/price/, msg => {
           }
         )
       )
-      .catch(error => console.log(error))
+      .catch(error => {
+        console.log(error)
+        bot.sendMessage(
+          msg.chat.id,
+          `Looks like the server we get data from is down, try again after some time.`,
+          { parse_mode: 'Markdown', disable_web_page_preview: true }
+        )
+      })
 })
 
 module.exports = bot
