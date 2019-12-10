@@ -20,10 +20,10 @@ const config = {
 console.log('Bot server started in the ' + process.env.NODE_ENV + ' mode')
 
 const priceTemplateBittrex = (name, data, btc) =>
-  `${decodeURI(`%60${name}%60`)} : ${parseFloat(data.Last).toFixed(
-    8
-  )} BTC | $${parseFloat(data.Last * btc).toFixed(2)}
-**Vol:** ${Math.round(data.Volume)} RADS **|** ${(parseFloat(data.Last).toFixed(
+  `[BITTREX](https://bittrex.com/Market/Index?MarketName=BTC-RADS) : ${parseFloat(
+    data.Last
+  ).toFixed(8)} BTC | $${parseFloat(data.Last * btc).toFixed(2)}
+*Vol:* ${Math.round(data.Volume)} RADS **|** ${(parseFloat(data.Last).toFixed(
     8
   ) * Math.round(data.Volume)
   ).toFixed(2)} BTC **|** ${Math.round(data.Volume * data.Last * btc)} USD
@@ -35,26 +35,37 @@ const priceTemplateBittrex = (name, data, btc) =>
       100 *
         Math.abs((data.Last - data.PrevDay) / ((data.Last + data.PrevDay) / 2))
     )
-  ).toFixed(2)}%`
+  ).toFixed(2)}% ${parseFloat(
+    Math.round(
+      100 *
+        Math.abs((data.Last - data.PrevDay) / ((data.Last + data.PrevDay) / 2))
+    )
+  ).toFixed(2) >= 0
+    ? ' ⬆️'
+    : ' ⬇️'}`
 
 const priceTemplateVCC = (name, data, btc) =>
-  `${decodeURI(`%60${name}%60`)} : ${parseFloat(data.last).toFixed(
-    8
-  )} BTC | $${parseFloat(data.last * btc).toFixed(2)}
-**Vol:** ${Math.round(data.baseVolume)} RADS **|** ${(parseFloat(
+  `[VCC](https://vcc.exchange/exchange/basic?currency=btc&coin=rads) : ${parseFloat(
+    data.last
+  ).toFixed(8)} BTC | $${parseFloat(data.last * btc).toFixed(2)}
+*Vol:* ${Math.round(data.baseVolume)} RADS **|** ${(parseFloat(
     data.last
   ).toFixed(8) * Math.round(data.baseVolume)
   ).toFixed(2)} BTC **|** ${Math.round(data.baseVolume * data.last * btc)} USD
 *Low:* ${parseFloat(data.low24hr).toFixed(8)} | *High:* ${parseFloat(
     data.high24hr
   ).toFixed(8)}
-*24h change:* ${parseFloat(data.percentChange).toFixed(2)}%`
+*24h change:* ${parseFloat(data.percentChange).toFixed(2)}% ${parseFloat(
+    data.percentChange
+  ).toFixed(2) >= 0
+    ? ' ⬆️'
+    : ' ⬇️'}`
 
 const priceTemplateUpbit = (name, data, btc) =>
-  `${decodeURI(`%60${name}%60`)} : ${parseFloat(data.trade_price).toFixed(
-    8
-  )} BTC | $${parseFloat(data.trade_price * btc).toFixed(2)}
-**Vol:** ${Math.round(data.trade_volume)} RADS **|** ${(parseFloat(
+  `[UPbit Korea](https://upbit.com/exchange?code=CRIX.UPBIT.BTC-RADS) : ${parseFloat(
+    data.trade_price
+  ).toFixed(8)} BTC | $${parseFloat(data.trade_price * btc).toFixed(2)}
+*Vol:* ${Math.round(data.trade_volume)} RADS **|** ${(parseFloat(
     data.trade_price
   ).toFixed(8) * Math.round(data.trade_volume)
   ).toFixed(2)} BTC **|** ${Math.round(
@@ -71,21 +82,34 @@ const priceTemplateUpbit = (name, data, btc) =>
             ((data.trade_price + data.prev_closing_price) / 2)
         )
     )
-  ).toFixed(2)}%`
+  ).toFixed(2)}% ${parseFloat(
+    Math.round(
+      100 *
+        Math.abs(
+          (data.trade_price - data.prev_closing_price) /
+            ((data.trade_price + data.prev_closing_price) / 2)
+        )
+    )
+  ).toFixed(2) >= 0
+    ? ' ⬆️'
+    : ' ⬇️'}`
 
 const priceTemplateFinexbox = (name, data, btc) =>
-  `${decodeURI(`%60${name}%60`)} : ${parseFloat(data.price).toFixed(
-    8
-  )} BTC | $${parseFloat(data.price * btc).toFixed(2)}
-**Vol:** ${Math.round(data.volume)} RADS **|** ${(parseFloat(
+  `[FINEXBOX](https://www.finexbox.com/market/pair/RADS-BTC.html) : ${parseFloat(
     data.price
-  ).toFixed(8) * Math.round(data.volume)
+  ).toFixed(8)} BTC | $${parseFloat(data.price * btc).toFixed(2)}
+*Vol:* ${Math.round(data.volume)} RADS **|** ${(parseFloat(data.price).toFixed(
+    8
+  ) * Math.round(data.volume)
   ).toFixed(2)} BTC **|** ${Math.round(data.volume * data.price * btc)} USD
 *Low:* ${parseFloat(data.low).toFixed(8)} | *High:* ${parseFloat(
     data.high
   ).toFixed(8)}
-*24h change:* ${parseFloat(data.percent).toFixed(2)}%
-`
+*24h change:* ${parseFloat(data.percent).toFixed(2)}% ${parseFloat(
+    data.percent
+  ).toFixed(8) >= 0
+    ? ' ⬆️'
+    : ' ⬇️'}`
 
 bot.on('message', msg => {
   console.log(
@@ -210,7 +234,7 @@ bot.onText(/\/price/, msg => {
               fineboxData,
               coinMarketCapBTC
             )}`,
-              { parse_mode: 'Markdown' }
+              { parse_mode: 'Markdown', disable_web_page_preview: true }
             )
           }
         )
