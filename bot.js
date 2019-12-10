@@ -291,6 +291,7 @@ bot.onText(/\/mcap/, (msg, a) => {
 })
 
 bot.onText(/\/price/, msg => {
+  const save = msg
   if (new Date(new Date().toUTCString()) - new Date(msg.date * 1000) < 10000)
     axios
       .all([
@@ -360,7 +361,7 @@ bot.onText(/\/price/, msg => {
       .catch(error => {
         console.log(error)
         bot.sendMessage(
-          msg.chat.id,
+          save.chat.id,
           `Looks like the server we get data from is down, try again after some time.`,
           { parse_mode: 'Markdown', disable_web_page_preview: true }
         )
