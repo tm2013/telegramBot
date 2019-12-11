@@ -7,6 +7,9 @@ const fs = require('fs')
 let bot
 const token = process.env.botToken
 
+const httpClient = axios.create()
+httpClient.defaults.timeout = 5000
+
 if (process.env.NODE_ENV === 'production') {
   bot = new TelegramBot(token, { polling: true })
   //gubot.setWebHook(process.env.HEROKU_URL + token)
@@ -264,11 +267,11 @@ bot.onText(/\/repo/, msg => {
 bot.onText(/\/mcap/, (msg, a) => {
   axios
     .all([
-      axios.get(
+      httpClient.get(
         'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=RADS',
         config
       ),
-      axios.get(
+      httpClient.get(
         'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=BTC',
         config
       )
@@ -295,17 +298,17 @@ bot.onText(/\/price/, msg => {
   if (new Date(new Date().toUTCString()) - new Date(msg.date * 1000) < 10000)
     axios
       .all([
-        axios.get(
+        httpClient.get(
           'https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=btc-rads'
         ), //bittrex with param
-        axios.get(
+        httpClient.get(
           'https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=USD-BTC'
         ),
-        axios.get(`https://vcc.exchange/api/v2/summary`), // vcc without param
-        axios.get('https://api.upbit.com/v1/ticker?markets=BTC-RADS'), //upbit with param
-        axios.get('https://api.upbit.com/v1/ticker?markets=USDT-BTC'), //upbit with param
-        axios.get('https://xapi.finexbox.com/v1/market'), // finebox without param
-        axios.get(
+        httpClient.get(`https://vcc.exchange/api/v2/summary`), // vcc without param
+        httpClient.get('https://api.upbit.com/v1/ticker?markets=BTC-RADS'), //upbit with param
+        httpClient.get('https://api.upbit.com/v1/ticker?markets=USDT-BTC'), //upbit with param
+        httpClient.get('https://xapi.finexbox.com/v1/market'), // finebox without param
+        httpClient.get(
           'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=BTC',
           config
         ) // This is the BTC USD Price for converting finexbox RADS/BTC price to USD. !!! Will have small discrepancy as not getting the BTC/USD price from finexbox directly'
