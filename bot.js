@@ -364,7 +364,7 @@ bot.onText(/\/price/, msg => {
               upbitData = upbit.data[0]
               upbitBTC = upbitBTCData.data[0].trade_price
             }
-            if (!ramda.isNil(finebox) && !ramda.isNil(coinMarketCapBTCData)) {
+            /*if (!ramda.isNil(finebox) && !ramda.isNil(coinMarketCapBTCData)) {
               fineboxID = ramda.findIndex(ramda.propEq('market', 'RADS_BTC'))(
                 finebox.data.result
               )
@@ -373,7 +373,7 @@ bot.onText(/\/price/, msg => {
                 : finebox.data.result[fineboxID]
               coinMarketCapBTC =
                 coinMarketCapBTCData.data.data.BTC.quote.USD.price
-            }
+            }*/ // Not listed on finebox.
             bot.sendMessage(
               msg.chat.id,
               `${!ramda.isNil(bittrex)
@@ -384,12 +384,14 @@ bot.onText(/\/price/, msg => {
               : '[VCC](https://vcc.exchange/exchange/basic?currency=btc&coin=rads) servers are down.'}
             \n${!ramda.isNil(upbit)
               ? priceTemplateUpbit('Upbit', upbitData, upbitBTC)
-              : '[UPbit](https://upbit.com/exchange?code=CRIX.UPBIT.BTC-RADS) Servers are down.'}
-            \n${!ramda.isNil(finebox)
-              ? priceTemplateFinexbox('Finexbox', fineboxData, coinMarketCapBTC)
-              : '[FINEXBOX](https://www.finexbox.com/market/pair/RADS-BTC.html) Servers are down!'}`,
+              : '[UPbit](https://upbit.com/exchange?code=CRIX.UPBIT.BTC-RADS) Servers are down.'}`,
               { parse_mode: 'Markdown', disable_web_page_preview: true }
             )
+            /*
+            \n${!ramda.isNil(finebox)
+              ? priceTemplateFinexbox('Finexbox', fineboxData, coinMarketCapBTC)
+              : '[FINEXBOX](https://www.finexbox.com/market/pair/RADS-BTC.html) Servers are down!'}
+              */
           }
         )
       )
