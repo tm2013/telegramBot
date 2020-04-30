@@ -118,6 +118,18 @@ const priceTemplateFinexbox = (name, data, btc) =>
   ).toFixed(8)}
 *24h change:* N/A`;
 
+const priceTemplateLiveCoin = (name, data, btc) =>
+  `[Livecoin](https://www.livecoin.net/en/trading/RADS_BTC) : ${parseFloat(
+    data.last
+  ).toFixed(8)} BTC | $${parseFloat(data.last * btc.last).toFixed(2)}
+*Vol:* ${Math.round(data.volume)} RADS **|** ${(
+    parseFloat(data.last).toFixed(8) * Math.round(data.volume)
+  ).toFixed(2)} BTC **|** ${Math.round(data.volume * data.last * btc.last)} USD
+*Low:* ${parseFloat(data.low).toFixed(8)} | *High:* ${parseFloat(
+    data.high
+  ).toFixed(8)}
+*24h change:* N/A`;
+
 bot.on('message', (msg) => {
   if (!msg.text.startsWith('/')) {
     const data = 'NEWDATASTART\n' + msg.text + '\nNEWDATAEND\n';
@@ -226,6 +238,14 @@ bot.onText(/\/price/, (msg) => {
             config
           )
           .catch(useNull), // This is the BTC USD Price for converting finexbox RADS/BTC price to USD. !!! Will have small discrepancy as not getting the BTC/USD price from finexbox directly'
+        httpClient
+          .get(
+            'https://api.livecoin.net//exchange/ticker?currencyPair=RADS/BTC'
+          )
+          .catch(useNull), // Livecoin
+        httpClient
+          .get('https://api.livecoin.net//exchange/ticker?currencyPair=BTC/USD')
+          .catch(useNull), // LivecoinBTC
       ])
       .then(
         axios.spread(
@@ -236,7 +256,9 @@ bot.onText(/\/price/, (msg) => {
             upbit,
             upbitBTCData,
             finebox,
-            coinMarketCapBTCData
+            coinMarketCapBTCData,
+            livecoin,
+            livecoinBTC
           ) => {
             if (!ramda.isNil(bittrex) && !ramda.isNil(bittrexBTCData)) {
               bittrexData = bittrex.data.success ? bittrex.data.result[0] : {};
@@ -255,7 +277,16 @@ bot.onText(/\/price/, (msg) => {
             if (!ramda.isNil(upbit) && !ramda.isNil(upbitBTCData)) {
               upbitData = upbit.data[0];
               upbitBTC = upbitBTCData.data[0].trade_price;
-            } // Not listed on finebox.
+            }
+            if (
+              !ramda.isNil(livecoin) &&
+              livecoin.status == 200 &&
+              !ramda.isNil(livecoinBTC)
+            ) {
+              livecoinData = livecoin.data;
+              livecoinBTCdata = livecoinBTC.data;
+            }
+            // Not listed on finebox.
             /*if (!ramda.isNil(finebox) && !ramda.isNil(coinMarketCapBTCData)) {
               fineboxID = ramda.findIndex(ramda.propEq('market', 'RADS_BTC'))(
                 finebox.data.result
@@ -281,6 +312,17 @@ bot.onText(/\/price/, (msg) => {
               !ramda.isNil(upbit)
                 ? priceTemplateUpbit('Upbit', upbitData, upbitBTC)
                 : '[UPbit](https://upbit.com/exchange?code=CRIX.UPBIT.BTC-RADS) Servers are down.'
+            }
+            \n${
+              !ramda.isNil(livecoin) &&
+              livecoin.status == 200 &&
+              !ramda.isNil(livecoinBTCdata)
+                ? priceTemplateLiveCoin(
+                    'Livecoin',
+                    livecoinData,
+                    livecoinBTCdata
+                  )
+                : '[Livecoin](https://www.livecoin.net/en/trading/RADS_BTC) servers are down.'
             }`,
               { parse_mode: 'Markdown', disable_web_page_preview: true }
             );
