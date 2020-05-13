@@ -226,13 +226,6 @@ bot.onText(/\/price/, (msg) => {
           .catch(useNull),
         httpClient.get(`https://vcc.exchange/api/v2/summary`).catch(useNull), // vcc without param
         httpClient
-          .get('https://api.upbit.com/v1/ticker?markets=BTC-RADS')
-          .catch(useNull), //upbit with param
-        httpClient
-          .get('https://api.upbit.com/v1/ticker?markets=USDT-BTC')
-          .catch(useNull), //upbit with param
-        httpClient.get('https://xapi.finexbox.com/v1/market').catch(useNull), // finebox without param
-        httpClient
           .get(
             'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=BTC',
             config
@@ -253,9 +246,6 @@ bot.onText(/\/price/, (msg) => {
             bittrex,
             bittrexBTCData,
             vcc,
-            upbit,
-            upbitBTCData,
-            finebox,
             coinMarketCapBTCData,
             livecoin,
             livecoinBTC
@@ -274,10 +264,6 @@ bot.onText(/\/price/, (msg) => {
                 ? 0
                 : ramda.prop('btc_usdt', vcc.data.data).last;
             }
-            if (!ramda.isNil(upbit) && !ramda.isNil(upbitBTCData)) {
-              upbitData = upbit.data[0];
-              upbitBTC = upbitBTCData.data[0].trade_price;
-            }
             if (
               !ramda.isNil(livecoin) &&
               livecoin.status == 200 &&
@@ -286,6 +272,13 @@ bot.onText(/\/price/, (msg) => {
               livecoinData = livecoin.data;
               livecoinBTCdata = livecoinBTC.data;
             }
+            // Remove Upbit
+            /*
+             if (!ramda.isNil(upbit) && !ramda.isNil(upbitBTCData)) {
+                   upbitData = upbit.data[0];
+                   upbitBTC = upbitBTCData.data[0].trade_price;
+                 }
+            */
             // Not listed on finebox.
             /*if (!ramda.isNil(finebox) && !ramda.isNil(coinMarketCapBTCData)) {
               fineboxID = ramda.findIndex(ramda.propEq('market', 'RADS_BTC'))(
@@ -309,11 +302,6 @@ bot.onText(/\/price/, (msg) => {
                 : '[VCC](https://vcc.exchange/exchange/basic?currency=btc&coin=rads) servers are down.'
             }
             \n${
-              !ramda.isNil(upbit)
-                ? priceTemplateUpbit('Upbit', upbitData, upbitBTC)
-                : '[UPbit](https://upbit.com/exchange?code=CRIX.UPBIT.BTC-RADS) Servers are down.'
-            }
-            \n${
               !ramda.isNil(livecoin) &&
               livecoin.status == 200 &&
               !ramda.isNil(livecoinBTCdata)
@@ -327,9 +315,23 @@ bot.onText(/\/price/, (msg) => {
               { parse_mode: 'Markdown', disable_web_page_preview: true }
             );
             /*
+                         httpClient.get('https://xapi.finexbox.com/v1/market').catch(useNull), // finebox without param
             \n${!ramda.isNil(finebox)
               ? priceTemplateFinexbox('Finexbox', fineboxData, coinMarketCapBTC)
               : '[FINEXBOX](https://www.finexbox.com/market/pair/RADS-BTC.html) Servers are down!'}
+
+                      httpClient
+          .get('https://api.upbit.com/v1/ticker?markets=BTC-RADS')
+          .catch(useNull), //upbit with param
+        httpClient
+          .get('https://api.upbit.com/v1/ticker?markets=USDT-BTC')
+          .catch(useNull), //upbit with param
+
+              ${
+              !ramda.isNil(upbit)
+                ? priceTemplateUpbit('Upbit', upbitData, upbitBTC)
+                : '[UPbit](https://upbit.com/exchange?code=CRIX.UPBIT.BTC-RADS) Servers are down.'
+            }
               */
           }
         )
