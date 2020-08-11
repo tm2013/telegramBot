@@ -239,6 +239,12 @@ bot.onText(/\/price/, (msg) => {
         httpClient
           .get('https://api.livecoin.net//exchange/ticker?currencyPair=BTC/USD')
           .catch(useNull), // LivecoinBTC
+        httpClient
+          .get('https://api.upbit.com/v1/ticker?markets=BTC-RADS')
+          .catch(useNull), //upbit with param
+        httpClient
+          .get('https://api.upbit.com/v1/ticker?markets=USDT-BTC')
+          .catch(useNull), //upbit with param
       ])
       .then(
         axios.spread(
@@ -248,7 +254,9 @@ bot.onText(/\/price/, (msg) => {
             vcc,
             coinMarketCapBTCData,
             livecoin,
-            livecoinBTC
+            livecoinBTC,
+            upbit,
+            upbitBTCData
           ) => {
             if (!ramda.isNil(bittrex) && !ramda.isNil(bittrexBTCData)) {
               bittrexData = bittrex.data.success ? bittrex.data.result[0] : {};
