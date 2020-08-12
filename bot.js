@@ -43,19 +43,19 @@ const priceTemplateBittrex = (name, data, btc) =>
 *24h change:* ${parseFloat(
     Math.round(
       100 *
-        Math.abs((data.Last - data.PrevDay) / ((data.Last + data.PrevDay) / 2))
+      Math.abs((data.Last - data.PrevDay) / ((data.Last + data.PrevDay) / 2))
     )
   ).toFixed(2)}% ${
-    parseFloat(
-      Math.round(
-        100 *
-          Math.abs(
-            (data.Last - data.PrevDay) / ((data.Last + data.PrevDay) / 2)
-          )
+  parseFloat(
+    Math.round(
+      100 *
+      Math.abs(
+        (data.Last - data.PrevDay) / ((data.Last + data.PrevDay) / 2)
       )
-    ).toFixed(2) >= 0
-      ? ' ⬆️'
-      : ' ⬇️'
+    )
+  ).toFixed(2) >= 0
+    ? ' ⬆️'
+    : ' ⬇️'
   }`;
 
 const priceTemplateVCC = (name, data, btc) =>
@@ -69,23 +69,28 @@ const priceTemplateVCC = (name, data, btc) =>
     data.high24hr
   ).toFixed(8)}
 *24h change:* ${parseFloat(data.percentChange).toFixed(2)}% ${
-    parseFloat(data.percentChange).toFixed(2) >= 0 ? ' ⬆️' : ' ⬇️'
+  parseFloat(data.percentChange).toFixed(2) >= 0 ? ' ⬆️' : ' ⬇️'
   }`;
 
-const priceTemplateUpbit = (name, data, btc) =>
+const priceTemplateUpbit = (name, data, btc, coingeckoData) =>
   `[UPbit](https://upbit.com/exchange?code=CRIX.UPBIT.BTC-RADS) : ${parseFloat(
     data.trade_price
   ).toFixed(8)} BTC | $${parseFloat(data.trade_price * btc).toFixed(2)}
-*Vol:* ${Math.round(data.acc_trade_volume)} RADS **|** ${(
-    parseFloat(data.trade_price).toFixed(8) * Math.round(data.acc_trade_volume)
-  ).toFixed(2)} BTC **|** ${Math.round(
-    data.acc_trade_volume * data.trade_price * btc
+*Vol:* ${Math.round(data.acc_trade_volume + (coingeckoData.converted_volume.btc * parseFloat(
+    data.trade_price
+  ).toFixed(8)))} RADS **|** ${
+  ((parseFloat(data.trade_price).toFixed(8) * Math.round(data.acc_trade_volume)) + (coingeckoData.converted_volume.btc)).toFixed(2)} BTC **|** ${Math.round(
+    (data.acc_trade_volume * data.trade_price * btc) + coingeckoData.converted_volume.usd
   )} USD
+*Volume Korea:* ${Math.abs((
+    (parseFloat(data.trade_price).toFixed(8) * Math.round(data.acc_trade_volume)) + coingeckoData.converted_volume.btc
+  ) - coingeckoData.converted_volume.btc).toFixed(2)} BTC 
+*Volume Indonesia:* ${(coingeckoData.converted_volume.btc).toFixed(2)} BTC
 *Low:* ${parseFloat(data.low_price).toFixed(8)} | *High:* ${parseFloat(
     data.high_price
   ).toFixed(8)}
 *24h change:* ${parseFloat(data.signed_change_rate * 100).toFixed(2)}% ${
-    parseFloat(data.signed_change_rate * 100).toFixed(2) >= 0 ? ' ⬆️' : ' ⬇️'
+  parseFloat(data.signed_change_rate * 100).toFixed(2) >= 0 ? ' ⬆️' : ' ⬇️'
   }`;
 
 const priceTemplateFinexbox = (name, data, btc) =>
@@ -122,11 +127,11 @@ bot.on('message', (msg) => {
   }
   console.log(
     `\x1b[36m Requested by: \x1b[0m${msg.from.id}, \x1b[36m Alias: \x1b[0m${
-      msg.from.username
+    msg.from.username
     } ${
-      msg.chat.type === 'supergroup'
-        ? `\x1b[36m Group: \x1b[0m${msg.chat.title}`
-        : `\x1b[36m Private: \x1b[0m${msg.chat.username}`
+    msg.chat.type === 'supergroup'
+      ? `\x1b[36m Group: \x1b[0m${msg.chat.title}`
+      : `\x1b[36m Private: \x1b[0m${msg.chat.username}`
     }
       \x1b[36m Msg Txt: \x1b[0m${msg.text},
       \x1b[36m Timestamp: \x1b[0m${new Date(msg.date * 1000).toUTCString()}),`
@@ -174,7 +179,7 @@ bot.onText(/\/mcap/, (msg, a) => {
             mcap.data.data.RADS.quote.USD.market_cap
           ).toLocaleString()} | ${parseFloat(
             mcap.data.data.RADS.quote.USD.market_cap /
-              btc.data.data.BTC.quote.USD.price
+            btc.data.data.BTC.quote.USD.price
           ).toFixed(2)} BTC`,
           { parse_mode: 'Markdown' }
         );
@@ -227,6 +232,9 @@ bot.onText(/\/price/, (msg) => {
         httpClient
           .get('https://api.upbit.com/v1/ticker?markets=USDT-BTC')
           .catch(useNull), //upbit with param
+        httpClient
+          .get('https://api.coingecko.com/api/v3/coins/radium')
+          .catch(useNull), //coingecko
       ])
       .then(
         axios.spread(
@@ -238,8 +246,16 @@ bot.onText(/\/price/, (msg) => {
             livecoin,
             livecoinBTC,
             upbit,
-            upbitBTCData
+            upbitBTCData,
+            coingecko
           ) => {
+            let coingeckoData = {};
+            try {
+              coingeckoData = ramda.find(ramda.propEq('trade_url', 'https://id.upbit.com/exchange?code=CRIX.UPBIT.BTC-RADS'))(coingecko.data.tickers);
+            }
+            catch (exception) {
+              console.log(exception)
+            }
             if (!ramda.isNil(bittrex) && !ramda.isNil(bittrexBTCData)) {
               bittrexData = bittrex.data.success ? bittrex.data.result[0] : {};
               bittrexBTC = bittrexBTCData.data.success
@@ -280,31 +296,31 @@ bot.onText(/\/price/, (msg) => {
             bot.sendMessage(
               msg.chat.id,
               `${
-                !ramda.isNil(bittrex)
-                  ? priceTemplateBittrex('Bittrex', bittrexData, bittrexBTC)
-                  : '[BITTREX](https://bittrex.com/Market/Index?MarketName=BTC-RADS) servers are down.'
+              !ramda.isNil(bittrex)
+                ? priceTemplateBittrex('Bittrex', bittrexData, bittrexBTC)
+                : '[BITTREX](https://bittrex.com/Market/Index?MarketName=BTC-RADS) servers are down.'
               }
             \n${
               !ramda.isNil(vcc)
                 ? priceTemplateVCC('VCC', vccData, vccBTC)
                 : '[VCC](https://vcc.exchange/exchange/basic?currency=btc&coin=rads) servers are down.'
-            }
+              }
             \n${
               !ramda.isNil(livecoin) &&
-              livecoin.status == 200 &&
-              !ramda.isNil(livecoinBTCdata)
+                livecoin.status == 200 &&
+                !ramda.isNil(livecoinBTCdata)
                 ? priceTemplateLiveCoin(
-                    'Livecoin',
-                    livecoinData,
-                    livecoinBTCdata
-                  )
+                  'Livecoin',
+                  livecoinData,
+                  livecoinBTCdata
+                )
                 : '[Livecoin](https://www.livecoin.net/en/trading/RADS_BTC) servers are down.'
-            }
+              }
              \n${
-               !ramda.isNil(upbit)
-                 ? priceTemplateUpbit('Upbit', upbitData, upbitBTC)
-                 : '[UPbit](https://upbit.com/exchange?code=CRIX.UPBIT.BTC-RADS) Servers are down.'
-             }
+              !ramda.isNil(upbit)
+                ? priceTemplateUpbit('Upbit', upbitData, upbitBTC, coingeckoData)
+                : '[UPbit](https://upbit.com/exchange?code=CRIX.UPBIT.BTC-RADS) Servers are down.'
+              }
               `,
               { parse_mode: 'Markdown', disable_web_page_preview: true }
             );
