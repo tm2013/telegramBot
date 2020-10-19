@@ -211,7 +211,7 @@ bot.onText(/\/price/, (msg) => {
             'https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=USD-BTC'
           )
           .catch(useNull),
-        httpClient.get(`https://vcc.exchange/api/v2/summary`).catch(useNull), // vcc without param
+        // httpClient.get(`https://vcc.exchange/api/v2/summary`).catch(useNull), // vcc without param
         httpClient
           .get(
             'https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest?symbol=BTC',
@@ -241,7 +241,7 @@ bot.onText(/\/price/, (msg) => {
           (
             bittrex,
             bittrexBTCData,
-            vcc,
+            // vcc,
             coinMarketCapBTCData,
             livecoin,
             livecoinBTC,
@@ -262,14 +262,14 @@ bot.onText(/\/price/, (msg) => {
                 ? bittrexBTCData.data.result[0].Last
                 : 0;
             }
-            if (!ramda.isNil(vcc)) {
+         /*   if (!ramda.isNil(vcc)) {
               vccData = ramda.isNil(ramda.prop('rads_btc', vcc.data.data))
                 ? {}
                 : ramda.prop('rads_btc', vcc.data.data);
               vccBTC = ramda.isNil(ramda.prop('btc_usdt', vcc.data.data))
                 ? 0
                 : ramda.prop('btc_usdt', vcc.data.data).last;
-            }
+            }*/
             if (
               !ramda.isNil(livecoin) &&
               livecoin.status == 200 &&
@@ -293,17 +293,23 @@ bot.onText(/\/price/, (msg) => {
               coinMarketCapBTC =
                 coinMarketCapBTCData.data.data.BTC.quote.USD.price
             }*/
+
+            // VCC
+
+            /*
+                        \n${
+              !ramda.isNil(vcc)
+                ? priceTemplateVCC('VCC', vccData, vccBTC)
+                : '[VCC](https://vcc.exchange/exchange/basic?currency=btc&coin=rads) servers are down.'
+              }
+              */
+            
             bot.sendMessage(
               msg.chat.id,
               `${
               !ramda.isNil(bittrex)
                 ? priceTemplateBittrex('Bittrex', bittrexData, bittrexBTC)
                 : '[BITTREX](https://bittrex.com/Market/Index?MarketName=BTC-RADS) servers are down.'
-              }
-            \n${
-              !ramda.isNil(vcc)
-                ? priceTemplateVCC('VCC', vccData, vccBTC)
-                : '[VCC](https://vcc.exchange/exchange/basic?currency=btc&coin=rads) servers are down.'
               }
             \n${
               !ramda.isNil(livecoin) &&
