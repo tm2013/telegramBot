@@ -58,18 +58,32 @@ const priceTemplateBittrex = (name, data, btc) =>
       : " ⬇️"
   }`;
 
-const priceTemplateVCC = (name, data, btc) =>
-  `[VCC](https://vcc.exchange/exchange/basic?currency=btc&coin=val) : ${parseFloat(
-    data.last
-  ).toFixed(8)} BTC | $${parseFloat(data.last * btc).toFixed(2)}
-*Vol:* ${Math.round(data.baseVolume)} VAL **|** ${(
-    parseFloat(data.last).toFixed(8) * Math.round(data.baseVolume)
-  ).toFixed(2)} BTC **|** ${Math.round(data.baseVolume * data.last * btc)} USD
-*Low:* ${parseFloat(data.low24hr).toFixed(8)} | *High:* ${parseFloat(
-    data.high24hr
+const priceTemplateBittrexUsdt = (name, data) =>
+  `[BITTREX USDT](https://bittrex.com/Market/Index?MarketName=USDT-VAL) : ${parseFloat(
+    data.Last
+  ).toFixed(8)} USDT
+*Vol:* ${Math.round(data.Volume)} VAL **|** ${(
+    parseFloat(data.Last).toFixed(8) * Math.round(data.Volume)
+  ).toFixed(2)} USDT
+*Low:* ${parseFloat(data.Low).toFixed(8)} | *High:* ${parseFloat(
+    data.High
   ).toFixed(8)}
-*24h change:* ${parseFloat(data.percentChange).toFixed(2)}% ${
-    parseFloat(data.percentChange).toFixed(2) >= 0 ? " ⬆️" : " ⬇️"
+*24h change:* ${parseFloat(
+    Math.round(
+      100 *
+        Math.abs((data.Last - data.PrevDay) / ((data.Last + data.PrevDay) / 2))
+    )
+  ).toFixed(2)}% ${
+    parseFloat(
+      Math.round(
+        100 *
+          Math.abs(
+            (data.Last - data.PrevDay) / ((data.Last + data.PrevDay) / 2)
+          )
+      )
+    ).toFixed(2) >= 0
+      ? " ⬆️"
+      : " ⬇️"
   }`;
 
 const priceTemplateUpbit = (name, data, btc, coingeckoData) =>
@@ -102,29 +116,43 @@ const priceTemplateUpbit = (name, data, btc, coingeckoData) =>
     parseFloat(data.signed_change_rate * 100).toFixed(2) >= 0 ? " ⬆️" : " ⬇️"
   }`;
 
-const priceTemplateFinexbox = (name, data, btc) =>
-  `[FINEXBOX](https://www.finexbox.com/market/pair/VAL-BTC.html) : ${parseFloat(
-    data.price
-  ).toFixed(8)} BTC | $${parseFloat(data.price * btc).toFixed(2)}
-*Vol:* ${Math.round(data.volume)} VAL **|** ${(
-    parseFloat(data.price).toFixed(8) * Math.round(data.volume)
-  ).toFixed(2)} BTC **|** ${Math.round(data.volume * data.price * btc)} USD
-*Low:* ${parseFloat(data.low).toFixed(8)} | *High:* ${parseFloat(
-    data.high
-  ).toFixed(8)}
-*24h change:* N/A`;
+// const priceTemplateFinexbox = (name, data, btc) =>
+//   `[FINEXBOX](https://www.finexbox.com/market/pair/VAL-BTC.html) : ${parseFloat(
+//     data.price
+//   ).toFixed(8)} BTC | $${parseFloat(data.price * btc).toFixed(2)}
+// *Vol:* ${Math.round(data.volume)} VAL **|** ${(
+//     parseFloat(data.price).toFixed(8) * Math.round(data.volume)
+//   ).toFixed(2)} BTC **|** ${Math.round(data.volume * data.price * btc)} USD
+// *Low:* ${parseFloat(data.low).toFixed(8)} | *High:* ${parseFloat(
+//     data.high
+//   ).toFixed(8)}
+// *24h change:* N/A`;
 
-const priceTemplateLiveCoin = (name, data, btc) =>
-  `[Livecoin](https://www.livecoin.net/en/trading/VAL_BTC) : ${parseFloat(
-    data.last
-  ).toFixed(8)} BTC | $${parseFloat(data.last * btc.last).toFixed(2)}
-*Vol:* ${Math.round(data.volume)} VAL **|** ${(
-    parseFloat(data.last).toFixed(8) * Math.round(data.volume)
-  ).toFixed(2)} BTC **|** ${Math.round(data.volume * data.last * btc.last)} USD
-*Low:* ${parseFloat(data.low).toFixed(8)} | *High:* ${parseFloat(
-    data.high
-  ).toFixed(8)}
-*24h change:* N/A`;
+// const priceTemplateLiveCoin = (name, data, btc) =>
+//   `[Livecoin](https://www.livecoin.net/en/trading/VAL_BTC) : ${parseFloat(
+//     data.last
+//   ).toFixed(8)} BTC | $${parseFloat(data.last * btc.last).toFixed(2)}
+// *Vol:* ${Math.round(data.volume)} VAL **|** ${(
+//     parseFloat(data.last).toFixed(8) * Math.round(data.volume)
+//   ).toFixed(2)} BTC **|** ${Math.round(data.volume * data.last * btc.last)} USD
+// *Low:* ${parseFloat(data.low).toFixed(8)} | *High:* ${parseFloat(
+//     data.high
+//   ).toFixed(8)}
+// *24h change:* N/A`;
+
+// const priceTemplateVCC = (name, data, btc) =>
+//   `[VCC](https://vcc.exchange/exchange/basic?currency=btc&coin=val) : ${parseFloat(
+//     data.last
+//   ).toFixed(8)} BTC | $${parseFloat(data.last * btc).toFixed(2)}
+// *Vol:* ${Math.round(data.baseVolume)} VAL **|** ${(
+//     parseFloat(data.last).toFixed(8) * Math.round(data.baseVolume)
+//   ).toFixed(2)} BTC **|** ${Math.round(data.baseVolume * data.last * btc)} USD
+// *Low:* ${parseFloat(data.low24hr).toFixed(8)} | *High:* ${parseFloat(
+//     data.high24hr
+//   ).toFixed(8)}
+// *24h change:* ${parseFloat(data.percentChange).toFixed(2)}% ${
+//     parseFloat(data.percentChange).toFixed(2) >= 0 ? " ⬆️" : " ⬇️"
+//   }`;
 
 bot.on("message", (msg) => {
   if (!msg.text.startsWith("/")) {
@@ -201,6 +229,7 @@ let vccBTC = 0;
 let vccData = 0;
 let bittrexData = 0;
 let bittrexBTC = 0;
+let bittrexUSDT = 0;
 let upbitBTC = 0;
 let upbitData = 0;
 let fineboxData = 0;
@@ -215,6 +244,11 @@ bot.onText(/\/price/, (msg) => {
             "https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=btc-val"
           )
           .catch(useNull), //bittrex with param
+        httpClient
+          .get(
+            "https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=usdt-val"
+          )
+          .catch(useNull),
         httpClient
           .get(
             "https://api.bittrex.com/api/v1.1/public/getmarketsummary?market=USD-BTC"
@@ -250,6 +284,7 @@ bot.onText(/\/price/, (msg) => {
         axios.spread(
           (
             bittrex,
+            bittrexUsdt,
             bittrexBTCData,
             // vcc,
             coinMarketCapBTCData,
@@ -268,8 +303,9 @@ bot.onText(/\/price/, (msg) => {
             } catch (exception) {
               console.log(exception);
             }
-            if (!ramda.isNil(bittrex) && !ramda.isNil(bittrexBTCData)) {
+            if (!ramda.isNil(bittrex) && !ramda.isNil(bittrexBTCData) && !ramda.isNil(bittrexUsdt)) {
               bittrexData = bittrex.data.success ? bittrex.data.result[0] : {};
+              bittrexUSDT = bittrexUsdt.data.success ? bittrexUsdt.data.result[0] : {};
               bittrexBTC = bittrexBTCData.data.success
                 ? bittrexBTCData.data.result[0].Last
                 : 0;
@@ -337,6 +373,11 @@ bot.onText(/\/price/, (msg) => {
                 !ramda.isNil(bittrex)
                   ? priceTemplateBittrex("Bittrex", bittrexData, bittrexBTC)
                   : "[BITTREX](https://bittrex.com/Market/Index?MarketName=BTC-VAL) servers are down."
+              }
+              \n${
+                !ramda.isNil(bittrexUSDT)
+                  ? priceTemplateBittrexUsdt("Bittrex", bittrexUSDT)
+                  : "[BITTREX](https://bittrex.com/Market/Index?MarketName=USDT-VAL) servers are down."
               }
              \n${
                !ramda.isNil(upbit)
